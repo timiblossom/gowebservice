@@ -1,0 +1,25 @@
+package logrequest
+
+import (
+	"fmt"
+	"net/http"
+        "net/http/httputil"
+	"time"
+)
+
+// Handler will log the HTTP requests
+func Handler(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+                dump, err := httputil.DumpRequest(r, true)
+		if err != nil {
+			http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
+			return
+		}
+
+		fmt.Printf("%q", dump)
+                fmt.Println("")
+
+                fmt.Println(time.Now().Format("2006-01-02 03:04:05 PM"), r.RemoteAddr, r.Method, r.URL)
+		next.ServeHTTP(w, r)
+	})
+}
